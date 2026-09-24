@@ -7,7 +7,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  turbopack: {},
+  // Empty config, we will force webpack in package.json
 };
 
 export default withPWA(nextConfig);
