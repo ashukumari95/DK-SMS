@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, X, ExternalLink } from 'lucide-react';
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
@@ -21,6 +22,15 @@ export default function InstallPrompt() {
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
+    // Check for in-app browsers (WhatsApp, Facebook, Instagram)
+    const inAppBrowser = /FBAN|FBAV|Instagram|WhatsApp|Line|Snapchat|LinkedIn/i.test(navigator.userAgent);
+    
+    if (inAppBrowser) {
+      setIsInAppBrowser(true);
+      setTimeout(() => setShowPrompt(true), 1500);
+      return; // Stop here, in-app browsers don't support PWA install
+    }
+
     if (isIosDevice) {
       setIsIOS(true);
       // Show iOS prompt instruction after 1.5 seconds
@@ -74,20 +84,34 @@ export default function InstallPrompt() {
           
           <div className="flex-1 pr-6">
             <h3 className="font-bold text-gray-900 text-lg">Install D.K.Mishra App</h3>
-            <p className="text-xs text-gray-500 mt-1 leading-snug">
-              {isIOS 
-                ? "Tap Share (square with arrow) below, then 'Add to Home Screen' to install this app."
-                : "Install our app on your phone for a faster, better experience. Login easily next time!"}
-            </p>
             
-            {!isIOS && (
-              <button
-                onClick={handleInstallClick}
-                className="mt-4 w-full flex items-center justify-center gap-2 bg-[var(--color-brand-blue)] text-white text-sm font-bold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(27,154,247,0.39)] hover:bg-blue-700 transition-all hover:shadow-[0_6px_20px_rgba(27,154,247,0.23)] hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <Download size={18} />
-                Install Now
-              </button>
+            {isInAppBrowser ? (
+              <>
+                <p className="text-xs text-red-600 font-medium mt-1 leading-snug">
+                  You are using WhatsApp/In-App browser. App cannot be installed from here.
+                </p>
+                <p className="text-sm text-gray-700 mt-2 font-medium">
+                  Please click the <span className="font-bold">3 dots (⋮)</span> in the top right corner and select <span className="font-bold">"Open in Chrome"</span>.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-gray-500 mt-1 leading-snug">
+                  {isIOS 
+                    ? "Tap Share (square with arrow) below, then 'Add to Home Screen' to install this app."
+                    : "Install our app on your phone for a faster, better experience. Login easily next time!"}
+                </p>
+                
+                {!isIOS && (
+                  <button
+                    onClick={handleInstallClick}
+                    className="mt-4 w-full flex items-center justify-center gap-2 bg-[var(--color-brand-blue)] text-white text-sm font-bold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(27,154,247,0.39)] hover:bg-blue-700 transition-all hover:shadow-[0_6px_20px_rgba(27,154,247,0.23)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <Download size={18} />
+                    Install Now
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
