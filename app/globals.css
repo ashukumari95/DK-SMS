@@ -1,26 +1,63 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand-blue: #1b9af7; /* Bright Blue */
+  --color-brand-accent: #b31b1b; /* Crimson Red */
+  --color-brand-light: #F9FAFB; /* Light Gray Background */
+  --color-brand-dark: #111827; /* Dark text */
+  --color-brand-gray: #F3F4F6; /* Gray background for cards */
+  
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-main: var(--color-brand-light);
+    --text-main: var(--color-brand-dark);
+    --bg-card: #ffffff;
+    --border-color: #f3f4f6;
+  }
+
+  .dark {
+    --bg-main: #0f172a; /* Slate 900 */
+    --text-main: #f8fafc; /* Slate 50 */
+    --bg-card: #1e293b; /* Slate 800 */
+    --border-color: #334155; /* Slate 700 */
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .card {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    @apply rounded-xl shadow-sm border p-6 transition-colors;
+  }
+  .btn-primary {
+    @apply bg-[var(--color-brand-blue)] text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors shadow-sm;
+  }
+  .btn-secondary {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    @apply text-gray-700 border px-6 py-2 rounded-lg font-medium hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-slate-700 transition-colors shadow-sm;
+  }
+  .input-field {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    @apply w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-brand-blue)] focus:border-transparent outline-none transition-colors;
+  }
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-sm rounded-xl dark:bg-slate-800/70 dark:border-slate-700/40;
+  }
 }
