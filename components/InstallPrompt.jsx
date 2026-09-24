@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, X, ExternalLink } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -9,60 +9,63 @@ export default function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [showManualInstructions, setShowManualInstructions] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
+    // Check if already installed (standalone mode)
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
       setIsStandalone(true);
       return;
     }
 
-    // Check if iOS
-    const isIosDevice =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     
-    // Check for in-app browsers (WhatsApp, Facebook, Instagram)
-    const inAppBrowser = /FBAN|FBAV|Instagram|WhatsApp|Line|Snapchat|LinkedIn/i.test(navigator.userAgent);
+    // Check if iOS
+    const isIosDevice = /iPad|iPhone|iPod/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    // Check for in-app browsers
+    const inAppBrowser = /FBAN|FBAV|Instagram|WhatsApp|Line|Snapchat|LinkedIn/i.test(userAgent);
     
     if (inAppBrowser) {
       setIsInAppBrowser(true);
-      setTimeout(() => setShowPrompt(true), 1500);
-      return; // Stop here, in-app browsers don't support PWA install
     }
 
     if (isIosDevice) {
       setIsIOS(true);
-      // Show iOS prompt instruction after 1.5 seconds
-      setTimeout(() => setShowPrompt(true), 1500);
     }
 
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show our custom prompt UI after a small delay
-      setTimeout(() => setShowPrompt(true), 1500);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
+    // ALWAYS show the prompt after 1.5 seconds, even if event didn't fire
+    const timer = setTimeout(() => {
+      setShowPrompt(true);
+    }, 1500);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
     };
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    
-    // Show the native install prompt
-    deferredPrompt.prompt();
-    
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-      setShowPrompt(false);
+    if (deferredPrompt) {
+      // Browser supports automated install prompt
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowPrompt(false);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Browser blocked the event or we are in incognito/etc.
+      // Show manual instructions
+      setShowManualInstructions(true);
     }
-    setDeferredPrompt(null);
   };
 
   if (isStandalone || !showPrompt) return null;
@@ -88,28 +91,37 @@ export default function InstallPrompt() {
             {isInAppBrowser ? (
               <>
                 <p className="text-xs text-red-600 font-medium mt-1 leading-snug">
-                  You are using WhatsApp/In-App browser. App cannot be installed from here.
+                  App cannot be installed from WhatsApp browser.
                 </p>
                 <p className="text-sm text-gray-700 mt-2 font-medium">
-                  Please click the <span className="font-bold">3 dots (⋮)</span> in the top right corner and select <span className="font-bold">"Open in Chrome"</span>.
+                  Click the <span className="font-bold">3 dots (⋮)</span> top right and select <span className="font-bold">"Open in Chrome"</span>.
+                </p>
+              </>
+            ) : isIOS ? (
+              <>
+                <p className="text-xs text-gray-500 mt-1 leading-snug">
+                  Tap Share (square with arrow) below, then <strong>'Add to Home Screen'</strong> to install.
                 </p>
               </>
             ) : (
               <>
-                <p className="text-xs text-gray-500 mt-1 leading-snug">
-                  {isIOS 
-                    ? "Tap Share (square with arrow) below, then 'Add to Home Screen' to install this app."
-                    : "Install our app on your phone for a faster, better experience. Login easily next time!"}
-                </p>
-                
-                {!isIOS && (
-                  <button
-                    onClick={handleInstallClick}
-                    className="mt-4 w-full flex items-center justify-center gap-2 bg-[var(--color-brand-blue)] text-white text-sm font-bold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(27,154,247,0.39)] hover:bg-blue-700 transition-all hover:shadow-[0_6px_20px_rgba(27,154,247,0.23)] hover:-translate-y-0.5 active:translate-y-0"
-                  >
-                    <Download size={18} />
-                    Install Now
-                  </button>
+                {showManualInstructions ? (
+                  <p className="text-sm text-[var(--color-brand-blue)] font-semibold mt-2 leading-snug">
+                    Click the 3 dots (⋮) in your browser menu and select "Install App" or "Add to Home screen".
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-500 mt-1 leading-snug">
+                      Install our app on your phone for a faster experience.
+                    </p>
+                    <button
+                      onClick={handleInstallClick}
+                      className="mt-4 w-full flex items-center justify-center gap-2 bg-[var(--color-brand-blue)] text-white text-sm font-bold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(27,154,247,0.39)] hover:bg-blue-700 transition-all active:scale-95"
+                    >
+                      <Download size={18} />
+                      Install Now
+                    </button>
+                  </>
                 )}
               </>
             )}
