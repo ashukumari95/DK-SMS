@@ -12,6 +12,15 @@ export default function InstallPrompt() {
   const [showManualInstructions, setShowManualInstructions] = useState(false);
 
   useEffect(() => {
+    // Manually register Service Worker to ensure PWA works
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        console.log('Service Worker registered successfully');
+      }).catch((err) => {
+        console.error('Service Worker registration failed: ', err);
+      });
+    }
+
     // Check if already installed (standalone mode)
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
       setIsStandalone(true);
@@ -37,6 +46,8 @@ export default function InstallPrompt() {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      // If we got the event, we definitely don't need manual instructions
+      setShowManualInstructions(false);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
