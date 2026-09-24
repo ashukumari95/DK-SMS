@@ -47,15 +47,15 @@ export async function middleware(request) {
 
   // Redirect unauthenticated users to appropriate login
   if (!isValidSession && !isPublicPath) {
-    if (pathname === '/' || pathname.startsWith('/portal')) {
+    if (pathname.startsWith('/portal')) {
       return NextResponse.redirect(new URL('/portal/login', request.url));
     }
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Redirect root to portal/login if someone explicitly visits /
+  // Redirect root to admin login if someone explicitly visits /
   if (pathname === '/' && !isValidSession) {
-    return NextResponse.redirect(new URL('/portal/login', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
 
