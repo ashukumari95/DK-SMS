@@ -1,5 +1,6 @@
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
+import InstallPrompt from "@/components/InstallPrompt";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} ${poppins.variable} font-sans antialiased bg-gray-50 text-gray-900`}>
         {children}
+        <InstallPrompt />
       </body>
     </html>
   );
