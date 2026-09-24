@@ -10,8 +10,19 @@ const publicPaths = ['/login', '/forgot-password', '/api/auth/login', '/api/auth
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   
-  // Static files and Next.js internals
-  if (pathname.startsWith('/_next') || pathname.startsWith('/favicon.ico')) {
+  // Static files, Next.js internals, and PWA assets
+  if (
+    pathname.startsWith('/_next') || 
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/icon-') ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/manifest.json' ||
+    pathname === '/sw.js' ||
+    pathname.startsWith('/workbox-') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.jpg') ||
+    pathname.endsWith('.svg')
+  ) {
     return NextResponse.next();
   }
 
