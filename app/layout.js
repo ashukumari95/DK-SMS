@@ -18,7 +18,6 @@ export const viewport = {
 export const metadata = {
   title: "D.K.Mishra",
   description: "Advanced Student Management System for D.K.Mishra",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
